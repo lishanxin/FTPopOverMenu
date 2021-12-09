@@ -38,7 +38,8 @@
 #define FTDefaultShadowOpacity              0.f
 #define FTDefaultShadowOffsetX              0.f
 #define FTDefaultShadowOffsetY              2.f
-
+#define FTDefaultIconLeftPosition           @"left"
+#define FTDefaultIconRightPosition          @"right"
 
 static NSString  *const FTPopOverMenuTableViewCellIndentifier = @"FTPopOverMenuTableViewCellIndentifier";
 static NSString  *const FTPopOverMenuImageCacheDirectory = @"com.FTPopOverMenuImageCache";
@@ -114,6 +115,8 @@ typedef NS_ENUM(NSUInteger, FTPopOverMenuArrowDirection) {
         self.coverBackgroundColor = FTDefaultBackgroundColor;
         self.imageSize = CGSizeMake(FTDefaultMenuIconSize, FTDefaultMenuIconSize);
         self.horizontalMargin = FTDefaultMargin;
+        self.allowShowArrow = YES;
+        self.iconPosition = FTDefaultIconLeftPosition;
     }
     return self;
 }
@@ -165,12 +168,17 @@ typedef NS_ENUM(NSUInteger, FTPopOverMenuArrowDirection) {
 }
 
 - (void)setupWithMenuName:(NSString *)menuName menuImage:(id)menuImage selected:(BOOL)selected configuration:(FTPopOverMenuConfiguration *)configuration {
+    BOOL iconOnRight = [configuration.iconPosition isEqual:FTDefaultIconRightPosition];
     CGFloat imageWidth = configuration.imageSize.width;
     CGFloat imageHeight = configuration.imageSize.height;
     CGFloat margin = (configuration.menuRowHeight - imageHeight)/2.f;
     CGRect iconImageRect = CGRectMake(configuration.menuIconMargin, margin, imageWidth, imageHeight);
     CGFloat menuNameX = iconImageRect.origin.x + iconImageRect.size.width + configuration.menuTextMargin;
     CGRect menuNameRect = CGRectMake(menuNameX, 0, configuration.menuWidth - menuNameX - configuration.menuTextMargin, configuration.menuRowHeight);
+    if(iconOnRight){
+        iconImageRect = CGRectMake(configuration.menuWidth - configuration.menuIconMargin  - imageWidth, margin, imageWidth, imageHeight);
+        menuNameRect = CGRectMake(configuration.menuTextMargin, 0, configuration.menuWidth - configuration.menuTextMargin * 2 - imageWidth - configuration.menuIconMargin * 2, configuration.menuRowHeight);
+    }
     
     if (!menuImage) {
         menuNameRect = CGRectMake(configuration.menuTextMargin, 0, configuration.menuWidth - configuration.menuTextMargin*2, configuration.menuRowHeight);
@@ -187,7 +195,9 @@ typedef NS_ENUM(NSUInteger, FTPopOverMenuArrowDirection) {
                                 self.iconImageView.image = image;
                             });
                         }];
-        [self.contentView addSubview:self.iconImageView];
+        if(!iconOnRight){
+            [self.contentView addSubview:self.iconImageView];
+        }
     }
     self.menuNameLabel.frame = menuNameRect;
     self.menuNameLabel.font = configuration.textFont;
@@ -195,7 +205,9 @@ typedef NS_ENUM(NSUInteger, FTPopOverMenuArrowDirection) {
     self.menuNameLabel.textAlignment = configuration.textAlignment;
     self.menuNameLabel.text = menuName;
     [self.contentView addSubview:self.menuNameLabel];
-    
+    if(iconOnRight){
+        [self.contentView addSubview:self.iconImageView];
+    }
     if (selected) {
         self.menuNameLabel.textColor = configuration.selectedTextColor;
         self.backgroundColor = configuration.selectedCellBackgroundColor;
@@ -382,18 +394,19 @@ typedef NS_ENUM(NSUInteger, FTPopOverMenuArrowDirection) {
     CGFloat menuCornerRadius = self.config.menuCornerRadius;
     switch (_arrowDirection) {
         case FTPopOverMenuArrowDirectionUp:{
-            if (allowRoundedArrow) {
-                [path addArcWithCenter:CGPointMake(anglePoint.x + self.menuArrowWidth, self.menuArrowHeight - 2.f*FTDefaultMenuArrowRoundRadius) radius:2.f*FTDefaultMenuArrowRoundRadius startAngle:M_PI_2 endAngle:M_PI_4*3.f clockwise:YES];
-                [path addLineToPoint:CGPointMake(anglePoint.x + FTDefaultMenuArrowRoundRadius/sqrtf(2.f), roundcenterPoint.y - FTDefaultMenuArrowRoundRadius/sqrtf(2.f))];
-                [path addArcWithCenter:roundcenterPoint radius:FTDefaultMenuArrowRoundRadius startAngle:M_PI_4*7.f endAngle:M_PI_4*5.f clockwise:NO];
-                [path addLineToPoint:CGPointMake(anglePoint.x - self.menuArrowWidth + (offset * (1.f+1.f/sqrtf(2.f))), self.menuArrowHeight - offset/sqrtf(2.f))];
-                [path addArcWithCenter:CGPointMake(anglePoint.x - self.menuArrowWidth, self.menuArrowHeight - 2.f*FTDefaultMenuArrowRoundRadius) radius:2.f*FTDefaultMenuArrowRoundRadius startAngle:M_PI_4 endAngle:M_PI_2 clockwise:YES];
-            } else {
-                [path moveToPoint:CGPointMake(anglePoint.x + self.menuArrowWidth, self.menuArrowHeight)];
-                [path addLineToPoint:anglePoint];
-                [path addLineToPoint:CGPointMake( anglePoint.x - self.menuArrowWidth, self.menuArrowHeight)];
+            if(self.config.allowShowArrow){
+                if (allowRoundedArrow) {
+                    [path addArcWithCenter:CGPointMake(anglePoint.x + self.menuArrowWidth, self.menuArrowHeight - 2.f*FTDefaultMenuArrowRoundRadius) radius:2.f*FTDefaultMenuArrowRoundRadius startAngle:M_PI_2 endAngle:M_PI_4*3.f clockwise:YES];
+                    [path addLineToPoint:CGPointMake(anglePoint.x + FTDefaultMenuArrowRoundRadius/sqrtf(2.f), roundcenterPoint.y - FTDefaultMenuArrowRoundRadius/sqrtf(2.f))];
+                    [path addArcWithCenter:roundcenterPoint radius:FTDefaultMenuArrowRoundRadius startAngle:M_PI_4*7.f endAngle:M_PI_4*5.f clockwise:NO];
+                    [path addLineToPoint:CGPointMake(anglePoint.x - self.menuArrowWidth + (offset * (1.f+1.f/sqrtf(2.f))), self.menuArrowHeight - offset/sqrtf(2.f))];
+                    [path addArcWithCenter:CGPointMake(anglePoint.x - self.menuArrowWidth, self.menuArrowHeight - 2.f*FTDefaultMenuArrowRoundRadius) radius:2.f*FTDefaultMenuArrowRoundRadius startAngle:M_PI_4 endAngle:M_PI_2 clockwise:YES];
+                } else {
+                    [path moveToPoint:CGPointMake(anglePoint.x + self.menuArrowWidth, self.menuArrowHeight)];
+                    [path addLineToPoint:anglePoint];
+                    [path addLineToPoint:CGPointMake( anglePoint.x - self.menuArrowWidth, self.menuArrowHeight)];
+                }
             }
-            
             [path addLineToPoint:CGPointMake(menuCornerRadius, self.menuArrowHeight)];
             [path addArcWithCenter:CGPointMake(menuCornerRadius, self.menuArrowHeight + menuCornerRadius) radius:menuCornerRadius startAngle:-M_PI_2 endAngle:-M_PI clockwise:NO];
             [path addLineToPoint:CGPointMake( 0, self.bounds.size.height - menuCornerRadius)];
@@ -407,18 +420,20 @@ typedef NS_ENUM(NSUInteger, FTPopOverMenuArrowDirection) {
         }break;
         case FTPopOverMenuArrowDirectionDown:{
             roundcenterPoint = CGPointMake(anglePoint.x, anglePoint.y - roundcenterHeight);
-            if (allowRoundedArrow) {
-                [path addArcWithCenter:CGPointMake(anglePoint.x + self.menuArrowWidth, anglePoint.y - self.menuArrowHeight + 2.f*FTDefaultMenuArrowRoundRadius) radius:2.f*FTDefaultMenuArrowRoundRadius startAngle:M_PI_2*3 endAngle:M_PI_4*5.f clockwise:NO];
-                [path addLineToPoint:CGPointMake(anglePoint.x + FTDefaultMenuArrowRoundRadius/sqrtf(2.f), roundcenterPoint.y + FTDefaultMenuArrowRoundRadius/sqrtf(2.f))];
-                [path addArcWithCenter:roundcenterPoint radius:FTDefaultMenuArrowRoundRadius startAngle:M_PI_4 endAngle:M_PI_4*3.f clockwise:YES];
-                [path addLineToPoint:CGPointMake(anglePoint.x - self.menuArrowWidth + (offset * (1.f+1.f/sqrtf(2.f))), anglePoint.y - self.menuArrowHeight + offset/sqrtf(2.f))];
-                [path addArcWithCenter:CGPointMake(anglePoint.x - self.menuArrowWidth, anglePoint.y - self.menuArrowHeight + 2.f*FTDefaultMenuArrowRoundRadius) radius:2.f*FTDefaultMenuArrowRoundRadius startAngle:M_PI_4*7 endAngle:M_PI_2*3 clockwise:NO];
-            } else {
-                [path moveToPoint:CGPointMake(anglePoint.x + self.menuArrowWidth, anglePoint.y - self.menuArrowHeight)];
-                [path addLineToPoint:anglePoint];
-                [path addLineToPoint:CGPointMake( anglePoint.x - self.menuArrowWidth, anglePoint.y - self.menuArrowHeight)];
+            if(self.config.allowShowArrow){
+                if (allowRoundedArrow) {
+                    [path addArcWithCenter:CGPointMake(anglePoint.x + self.menuArrowWidth, anglePoint.y - self.menuArrowHeight + 2.f*FTDefaultMenuArrowRoundRadius) radius:2.f*FTDefaultMenuArrowRoundRadius startAngle:M_PI_2*3 endAngle:M_PI_4*5.f clockwise:NO];
+                    [path addLineToPoint:CGPointMake(anglePoint.x + FTDefaultMenuArrowRoundRadius/sqrtf(2.f), roundcenterPoint.y + FTDefaultMenuArrowRoundRadius/sqrtf(2.f))];
+                    [path addArcWithCenter:roundcenterPoint radius:FTDefaultMenuArrowRoundRadius startAngle:M_PI_4 endAngle:M_PI_4*3.f clockwise:YES];
+                    [path addLineToPoint:CGPointMake(anglePoint.x - self.menuArrowWidth + (offset * (1.f+1.f/sqrtf(2.f))), anglePoint.y - self.menuArrowHeight + offset/sqrtf(2.f))];
+                    [path addArcWithCenter:CGPointMake(anglePoint.x - self.menuArrowWidth, anglePoint.y - self.menuArrowHeight + 2.f*FTDefaultMenuArrowRoundRadius) radius:2.f*FTDefaultMenuArrowRoundRadius startAngle:M_PI_4*7 endAngle:M_PI_2*3 clockwise:NO];
+                } else {
+                    [path moveToPoint:CGPointMake(anglePoint.x + self.menuArrowWidth, anglePoint.y - self.menuArrowHeight)];
+                    [path addLineToPoint:anglePoint];
+                    [path addLineToPoint:CGPointMake( anglePoint.x - self.menuArrowWidth, anglePoint.y - self.menuArrowHeight)];
+                }
             }
-            
+//
             [path addLineToPoint:CGPointMake( menuCornerRadius, anglePoint.y - self.menuArrowHeight)];
             [path addArcWithCenter:CGPointMake(menuCornerRadius, anglePoint.y - self.menuArrowHeight - menuCornerRadius) radius:menuCornerRadius startAngle:M_PI_2 endAngle:M_PI clockwise:YES];
             [path addLineToPoint:CGPointMake( 0, menuCornerRadius)];

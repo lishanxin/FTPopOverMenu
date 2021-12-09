@@ -63,6 +63,9 @@ typedef void (^FTPopOverMenuDismissBlock)(void);
 @property (nonatomic, strong) UIColor *coverBackgroundColor;
 @property (nonatomic, assign) CGSize imageSize;
 @property (nonatomic, assign) CGFloat horizontalMargin;
+@property (nonatomic, assign) BOOL allowShowArrow; // Default is 'YES', if sets to 'NO', the arrow will not be draw
+@property (nonatomic, assign) NSString *iconPosition; // Default is 'left'. You can set it to 'right'
+
 /**
  *  defaultConfiguration
  *

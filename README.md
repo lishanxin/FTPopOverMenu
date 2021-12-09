@@ -80,6 +80,8 @@ Do any of the following settings to set the style (Only set the ones you want to
     configuration.shadowRadius = ... // Default is 5
     configuration.shadowOffsetX = ...
     configuration.shadowOffsetY = ...
+    configuration.allowShowArrow = ...;
+    configuration.iconPosition = ...;
 ```
 
 

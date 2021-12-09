@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.license      = { :type => "MIT", :file => "LICENSE" }
   s.platform     = :ios
   s.ios.deployment_target = '9.0'
-  s.source       = { :git => "https://github.com/lishanxin/FTPopOverMenu.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/lishanxin/FTPopOverMenu.git" }
   s.source_files = "FTPopOverMenu", "FTPopOverMenu/*.{h,m}"
   s.requires_arc = true
 
